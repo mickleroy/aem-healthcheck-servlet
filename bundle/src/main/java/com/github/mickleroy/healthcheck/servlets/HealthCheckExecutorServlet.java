@@ -24,9 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Servlet used to execute Sling Health Checks based on provided tags.
+ * Servlet used to execute Sling Health Checks based on provided tags (if no tags 
+ * are provided, all registered health checks will be executed).
  * 
  * Sample requests:
+ * /system/health
  * /system/health?tags=devops
  * /system/health?tags=devops,security
  * /system/health?tags=devops,security&combineTagsOr=false
@@ -37,8 +39,7 @@ import org.slf4j.LoggerFactory;
  *       {
  *           "name": "Smoke Health Check",
  *           "status": "OK",
- *           "timeInMs": 0,
- *           "finishedAt": "Tue Dec 20 16:55:06 AEDT 2016"
+ *           "timeMs": 0,
  *       }
  *   ]
  * }
@@ -83,7 +84,7 @@ public class HealthCheckExecutorServlet extends SlingSafeMethodsServlet {
         response.setHeader("Cache-Control", "must-revalidate,no-cache,no-store");
         
         // parse query parameters
-        String tagsStr = request.getParameter(PARAM_TAGS);
+        String tagsStr = StringUtils.defaultString(request.getParameter(PARAM_TAGS));
         String[] tags = tagsStr.split("[, ;]+");
         String combineTagsOr = StringUtils.defaultString(request.getParameter(PARAM_COMBINE_TAGS_OR), "true");
         
@@ -111,20 +112,33 @@ public class HealthCheckExecutorServlet extends SlingSafeMethodsServlet {
         // write out JSON response
         JSONObject resultJson = new JSONObject();
         try {
-            JSONArray resultsJsonArr = new JSONArray();
-            resultJson.put("results", resultsJsonArr);
-
-            for (HealthCheckExecutionResult healthCheckResult : results) {
-                JSONObject result = new JSONObject();
-                result.put("name", healthCheckResult.getHealthCheckMetadata().getName());
-                result.put("status", healthCheckResult.getHealthCheckResult().getStatus());
-                result.put("timeInMs", healthCheckResult.getElapsedTimeInMs());
-                resultsJsonArr.put(result);
-            }
-        } catch (JSONException e) {
-            logger.error("Could not serialize result into JSON", e);
+            generateResponse(results, resultJson);
+        } catch(JSONException ex) {
+            logger.error("Could not serialize result into JSON", ex);
         }
-        
-        response.getWriter().append(resultJson.toString());
+        response.getWriter().write(resultJson.toString());
+    }
+    
+    /**
+     * Creates a JSON representation of the given HealthCheckExecutionResult list.
+     * @param executionResults
+     * @param resultJson
+     * @return
+     * @throws JSONException 
+     */
+    private static JSONObject generateResponse(List<HealthCheckExecutionResult> executionResults,
+                                                JSONObject resultJson) throws JSONException {
+        JSONArray resultsJsonArr = new JSONArray();
+        resultJson.put("results", resultsJsonArr);
+
+        for (HealthCheckExecutionResult healthCheckResult : executionResults) {
+            JSONObject result = new JSONObject();
+            result.put("name", healthCheckResult.getHealthCheckMetadata() != null ? 
+                               healthCheckResult.getHealthCheckMetadata().getName() : "");
+            result.put("status", healthCheckResult.getHealthCheckResult().getStatus());
+            result.put("timeMs", healthCheckResult.getElapsedTimeInMs());
+            resultsJsonArr.put(result);
+        }
+        return resultJson;
     }
 }
