@@ -26,7 +26,9 @@ Sample response:
 }
 ```
 
-Note: It is assumed that all /system/* paths are only accessible from a local network and not routed to the Internet.
+A `200` status code will be returned if ALL health checks return the status OK. Otherwise a `503` is returned.
+
+Note: It is assumed that all `/system/*` paths are only accessible from a local network and not routed to the Internet.
 
 ## Building
 
