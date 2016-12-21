@@ -1,3 +1,5 @@
+Project now maintained at: [https://github.com/shinesolutions/aem-healthcheck](https://github.com/shinesolutions/aem-healthcheck)
+
 # HealthCheck Servlet for AEM
 
 [![Build Status](https://travis-ci.org/mickleroy/aem-healthcheck-servlet.svg?branch=master)](https://travis-ci.org/mickleroy/aem-healthcheck-servlet)
