@@ -2,14 +2,29 @@
 
 [![Build Status](https://travis-ci.org/mickleroy/aem-healthcheck-servlet.svg?branch=master)](https://travis-ci.org/mickleroy/aem-healthcheck-servlet)
 
-Servlet used to execute Sling Health Checks based on provided tags (if no tags are provided, all registered health checks will be executed).
-For the full list of provided health checks in AEM, go to http://localhost:4502/system/console/healthcheck
+This servlet makes the JMX health check results accessible via HTTP.
+
+It is used to execute Sling Health Checks based on provided tags (if no tags are provided, all registered health checks will be executed).
+For the full list of provided health checks in AEM, go to [http://localhost:4502/system/console/healthcheck](http://localhost:4502/system/console/healthcheck).
 
 Sample requests:
- * http://<host>:<port>/system/health
- * http://<host>:<port>/system/health?tags=devops
- * http://<host>:<port>/system/health?tags=devops,security
- * http://<host>:<port>/system/health?tags=devops,security&combineTagsOr=false
+ * http://host:port/system/health
+ * http://host:port/system/health?tags=devops
+ * http://host:port/system/health?tags=devops,security
+ * http://host:port/system/health?tags=devops,security&combineTagsOr=false
+
+Sample response:
+```
+{
+  "results": [
+    {
+      "name": "Smoke Health Check",
+      "status": "OK",
+      "timeInMs": 1
+    }
+  ]
+}
+```
 
 Note: It is assumed that all /system/* paths are only accessible from a local network and not routed to the Internet.
 
